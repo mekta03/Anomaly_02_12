@@ -1,6 +1,10 @@
 import pandas as pd
 
-df = pd.read_csv('C:/Users/Egor/Desktop/Oxigen_result/All_parameters_without_none(New).csv', delimiter=',')
+df = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/All_parameters_without_none_extremum.csv', delimiter=',')
+df_new1 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
+month = 5
+print(df.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
+print(df_new1.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
 #df['temp'] = df['temp'].fillna(-10)
 #df = df.query(' sal < 10')
 #print(df[['Year','Month','long','lat','temp','sal','level','Stations']])
@@ -27,9 +31,9 @@ for day in range(2,32):
 
 df_without_dubl_month = df_last.drop_duplicates()
 
-print(df_work.describe())
-print(df_last.describe())
-print(df_without_dubl_month.describe())
+#print(df_work.describe())
+#print(df_last.describe())
+#print(df_without_dubl_month.describe())
 
 
 #print(df.query('sal >= 36')[['temp','sal','level','Stations','lat','long']])

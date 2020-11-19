@@ -18,46 +18,88 @@
 import pandas as pd
 
 
-path_orig = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/original.csv'
+path_orig = 'C:/Users/Egor/Desktop/oxygen_2.0.1/All_parameters_without_none_extremum.csv'
 orig_df = pd.read_csv(path_orig, delimiter=',')
-path_cutter = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/1930_01.csv'
+#df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
+#path_cutter = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/1930_01.csv'
+
+
+def cutter_orig_file(df):
+    """
+    РАЗБИВАЕТ ОРИГИНАЛ ФАЙЛА НА НЕСКОЛЬКО ПО ГОДУ И МЕСЯЦУ
+    """
+    # new_df = pd.read_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/new_orig_copy.csv', delimiter=',')
+    # ДОБАВИТЬ ФАЙЛ ДЛЯ СОЕДИНЕНИЯ!!!!!!!!!!!!!!
+    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
+
+    for year in range(1930, 2016):
+        if year in list(df['Year']):
+            for month in range(1, 13):
+                if month in list(df.query('Year == @year')['Month']):
+                    for day in range(1,32):
+                        if day in list(df.query('Year == @year & Month == @month')['Day']):
+                            df_new = df.query('Year == @year & Month == @month & Day == @day')
+                            print('KK')
+                            # !!!!!!!!!!!!!!!!!!!!!!!!NEW
+                            #cleaning_cuttered_files(df_new)
+                            df_new = df_new.drop_duplicates(['long', 'lat', 'level'])
+                            # ВСТАВИТЬ НОМЕРА СТАНЦИЙ
+                            number_station(df_new)
+                            df_last = pd.concat([df_last, df_new])
+                            df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', index=False)
+
+                            print('Cleaning_cuttered_files - OK')
+                            print(f'{year, month, day}')
+
+
+
+                    #print(df_new)
+                    #number_station(df)
+                    #print(df)
+                    #df_last = pd.concat([df_last, df])
+                    #print('KK')
+    #df_last.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/joined/1930_6_nst.csv',index=False)
+    #print('joiner_clean_files - OK')
+
+
 
 
 def cleaning_cuttered_files(df):
+    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
     """
     Берет отдельные файлы и меняет в каждом пустой zz на глубину последнего горизонта
     """
-    df['zz'] = df['zz'].fillna(0)   # Заменяю пустые значения в zz на 0
-
+    #df_clean = df.copy()
+    #df_clean['zz'] = df_clean['zz'].fillna(0) # Заменяю пустые значения в zz на 0
     """
         Замена глубины места(zz) на последний горизонт, в случае если она равна 0 
         или меньше глубины посл.горизонта
     """
 
-    grouped_by_coord = df.groupby(by=['long', 'lat'])  # Группирую по координтам
-    replaced_null_df = dict(list(grouped_by_coord))  # Записывая результат в словарь
+    #grouped_by_coord = df.groupby(by=['long', 'lat'])  # Группирую по координтам
+    #replaced_null_df = dict(list(grouped_by_coord))  # Записывая результат в словарь
 
-    for k, v in replaced_null_df.items():  # k,v - ключ и значение к словарю, соответственно
-        max = v['level'].max()  # беру за максимум глубину последнего горизонта
-        # Если глубина места меньше глубины последнего горизонта, соответственно заменяет ее
-        for zz in v['zz']:
-            if zz < max:
-                v['zz'].replace(zz, max, inplace=True)
-        # Если глубина места 0, заменяет ее на глубину последнего горизонта
-        v['zz'].replace(0, max, inplace=True)
+    #for k, v in replaced_null_df.items():  # k,v - ключ и значение к словарю, соответственно
+    #    max = v['level'].max()  # беру за максимум глубину последнего горизонта
+    #    # Если глубина места меньше глубины последнего горизонта, соответственно заменяет ее
+    #    for zz in v['zz']:
+    #        if zz < max:
+    #            v['zz'].replace(zz, max, inplace=True)
+    #    # Если глубина места 0, заменяет ее на глубину последнего горизонта
+     #   v['zz'].replace(0, max, inplace=True)
     # Достаю из словаря новые значения глубины места zz и в итоге записываю их в отдельный список
-    lst_zz = []
-    for v in replaced_null_df.values():
-        lst_zz.append(v['zz'])
+    #lst_zz = []
+    #for v in replaced_null_df.values():
+    #    lst_zz.append(v['zz'])
 
-    new_lst_zz = []
-    for zz in lst_zz:
-        new_lst_zz.append(list(zz))
+    #new_lst_zz = []
+    #for zz in lst_zz:
+    #    new_lst_zz.append(list(zz))
 
-    finished_lst_zz = []
-    for zz in new_lst_zz:
-        for z in zz:
-            finished_lst_zz.append(z)
+    #finished_lst_zz = []
+    #for zz in new_lst_zz:
+    #    for z in zz:
+    #        finished_lst_zz.append(z)
 
     # Создаю из созданного списка со значениями zz новую таблицу
     #zz_df = pd.DataFrame(finished_lst_zz,
@@ -65,26 +107,31 @@ def cleaning_cuttered_files(df):
 
     # Записываю новые глубины в исходную таблицу
     #df['zz'] = zz_df
-    df['zz'] = finished_lst_zz
+    #df['zz'] = finished_lst_zz
     # Запись промежуточного варианта
     # df.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/' + f'{year}_{month}_1.csv', index=False)
     """
     Удаление строк с пустыми значениями и нулями в кислороде
     """
-    df = df.dropna()
-    df = df.query('oxig != 0')
+    #df = df.dropna()
+    #df = df.query('oxig != 0')
     # Запись промежуточного варианта
     # df.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/' + f'{year}_{month}_without_Nan_0.csv', index=False)
 
     """
     Удаление выбросов в температуре и солености
     """
-    df = df.query('sal < 40 & sal != 0 & temp < 40')
+    #df = df.query('sal < 40 & sal != 0 & temp < 40')
 
     #df.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/' + f'{year}_{month}_without_Nan_0_Extremal.csv',
     #          index=False)
+
+    df = df.drop_duplicates(['long', 'lat', 'level'])
+    df_last = pd.concat([df_last, df])
+    df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', index = False)
+
     print('Cleaning_cuttered_files - OK')
-    return df
+
 
 
 
@@ -92,9 +139,10 @@ def number_station(df):
     """
     ДОБАВЛЯЮ НОМЕРА СТАНЦИЙ
     """
+    df_new = df.copy()
     nst = 1
 
-    grouped_df = df.groupby(by=['long', 'lat'])  # Группирую по координатам
+    grouped_df = df_new.groupby(by=['long', 'lat'])  # Группирую по координатам
     grouped_df_series = grouped_df.size()  # Смотрю на результат объединения (сколько горизонтов на каждой станцийи)
     nums = grouped_df_series.shape[0]  # Кол-во станций
 
@@ -106,38 +154,16 @@ def number_station(df):
             lst.append(num)
         nst += 1  # Увеличиваю порядковый номер станции
 
-    df['Stations'] = lst  # Добавляю в таблицу столбец с номерами станций
+    df_new['Stations'] = lst  # Добавляю в таблицу столбец с номерами станций
     #path_df_with_nst = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/nst/' + f'{year}_{month}_nst.csv'
     #df.to_csv(path_df_with_nst, index=False)
     print('number_station - OK')
-    return df
+    return df_new
 
 
-def cutter_orig_file():
-    """
-    РАЗБИВАЕТ ОРИГИНАЛ ФАЙЛА НА НЕСКОЛЬКО ПО ГОДУ И МЕСЯЦУ
-    """
-    new_df = pd.read_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/new_orig_copy.csv', delimiter=',')
-    # ДОБАВИТЬ ФАЙЛ ДЛЯ СОЕДИНЕНИЯ!!!!!!!!!!!!!!
-    df_last = pd.read_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/joined/1930_6_nst.csv', delimiter=',')
-    for year in range(1930, 2016):
-        if year in list(new_df['Year']):
 
-            for month in range(1, 13):
-                if month in list(new_df.query('Year == @year')['Month']):
-                    df = new_df.query('Year == @year & Month == @month')
-                    print('KK')
-                    # !!!!!!!!!!!!!!!!!!!!!!!!NEW
-                    #cleaning_cuttered_files(df)
-                    #print(df)
-                    number_station(df)
-                    print(df)
-                    #df_last = pd.concat([df_last, df])
-                    #print('KK')
-    #df_last.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/joined/1930_6_nst.csv',index=False)
-    #print('joiner_clean_files - OK')
 
-cutter_orig_file()
+cutter_orig_file(orig_df)
 
 
 # if __name__ == '__main__':
