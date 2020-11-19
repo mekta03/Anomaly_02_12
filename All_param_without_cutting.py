@@ -23,7 +23,6 @@ orig_df = pd.read_csv(path_orig, delimiter=',')
 #df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
 #path_cutter = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/1930_01.csv'
 
-
 def cutter_orig_file(df):
     """
     РАЗБИВАЕТ ОРИГИНАЛ ФАЙЛА НА НЕСКОЛЬКО ПО ГОДУ И МЕСЯЦУ
@@ -163,7 +162,18 @@ def number_station(df):
 
 
 
-cutter_orig_file(orig_df)
+#cutter_orig_file(orig_df)
+
+"""
+ удаляет дубликаты во всем массиве
+
+"""
+def del_dubl_in_month():
+    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
+    df_last = df_last.drop_duplicates(['long', 'lat', 'level', 'temp','sal', 'oxig'])
+    #print(df_last.describe())
+    df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst_2.csv', index=False)
+#del_dubl_in_month()
 
 
 # if __name__ == '__main__':

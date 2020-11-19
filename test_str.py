@@ -2,9 +2,12 @@ import pandas as pd
 
 df = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/All_parameters_without_none_extremum.csv', delimiter=',')
 df_new1 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
+df_new2 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst_2.csv', delimiter=',')
 month = 5
-print(df.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
-print(df_new1.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
+#print(df.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
+print(df.describe())
+print(df_new1.describe())
+print(df_new2.describe())
 #df['temp'] = df['temp'].fillna(-10)
 #df = df.query(' sal < 10')
 #print(df[['Year','Month','long','lat','temp','sal','level','Stations']])
