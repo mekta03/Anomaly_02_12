@@ -5,9 +5,9 @@ df_new1 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delim
 df_new2 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst_2.csv', delimiter=',')
 month = 5
 #print(df.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
-print(df.describe())
-print(df_new1.describe())
-print(df_new2.describe())
+#print(df[['temp','sal','level','Stations']].describe())
+#print(df_new1[['temp','sal','level','Stations']].describe())
+print(df_new2.query('Stations == 8151')[['Year','Month','Day']])
 #df['temp'] = df['temp'].fillna(-10)
 #df = df.query(' sal < 10')
 #print(df[['Year','Month','long','lat','temp','sal','level','Stations']])
