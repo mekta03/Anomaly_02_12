@@ -1,51 +1,34 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(style="darkgrid")
 
 df = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/All_parameters_without_none_extremum.csv', delimiter=',')
 df_new1 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
 df_new2 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst_2.csv', delimiter=',')
+df_new3 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47.csv', delimiter=',')
+df_new4 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47(2).csv', delimiter=',')
+df_new5 = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47(3).csv', delimiter=',')
+
+print(df_new1.describe())
+print(df_new2.describe())
+print(df_new3.describe())
+print(df_new4.describe())
+print(df_new5.describe())
+
+
 month = 5
-#print(df.query('Year == 1977 & Month == @month')[['long','lat','temp','level']])
-#print(df[['temp','sal','level','Stations']].describe())
-#print(df_new1[['temp','sal','level','Stations']].describe())
-print(df_new2.query('Stations == 8151')[['Year','Month','Day']])
-#df['temp'] = df['temp'].fillna(-10)
-#df = df.query(' sal < 10')
-#print(df[['Year','Month','long','lat','temp','sal','level','Stations']])
-#max_t = df.temp.max()
-#min_t = df.temp.min()
-#max_sal = df.sal.max()
-#min_sal = df.sal.min()
-max_lat = df.lat.max()
-min_lat = df.lat.min()
-max_long = df.long.max()
-min_long = df.long.min()
-#print(min_lat,max_lat,min_long,max_long )
-
-#df_level = df['level'].value_counts()
-#print(df_level.head(20)
-
-df_work = df.query('Year == 1978 & Month == 6')
-df_last = df.query('Year == 1978 & Month == 6 & Day == 1')
-for day in range(2,32):
-    if day in list(df_work['Day']):
-        df_new = df_work.query('Day == @day')
-        df_new = df_new.drop_duplicates(['long','lat','level'])
-        df_last = pd.concat([df_last, df_new])
-
-df_without_dubl_month = df_last.drop_duplicates()
-
-#print(df_work.describe())
-#print(df_last.describe())
-#print(df_without_dubl_month.describe())
+#print(df_new2.query('Year == 1949 &  83 <= Stations <= 87')[['Day', 'Month', 'long','lat','level','sal','Stations']].head(10))
+#sns.relplot(x='Year', y='temp', data=df_new2)
 
 
-#print(df.query('sal >= 36')[['temp','sal','level','Stations','lat','long']])
-#print(df.sal.max())
-#print(df.sal.describe())
+#sns.relplot(x="Year", y="temp", data=df_new2)
+#g = sns.relplot(x="Year", y="temp", kind="line", data=df_new2)
+#sns.relplot(x="Year", y="temp", kind="line", data=df_new2.query('level == 10'))
 
-# ДЛЯ УДАЛЕНИЯ ДУБЛИКАТОВ В КАЖДОМ ДНЕ
-#df1 = df.drop_duplicates(['long','lat','level'])
-#print(df.describe())
-#print(df1.describe())
-#df = df.unique()
+#plt.show()
+
+
+
+
 

@@ -1,11 +1,13 @@
 """
-Разбивает дату на отдельные  столбцы (Год, Месяц, День).
-Разбивает оригинальный файл БД по месяцам и годам
+
+Разбивает оригинальный файл БД  Год --> Месяц --> День
 Затем в каждом отдельном файле:
     1. Меняет пустые (и неверные) значения глубины места (zz) на глубину последнего горизонта.
     2. Удаляет строки с пустыми значениями температур, солености, кислорода
     3. Фильтрует "выбросы" в показаниях температуры и солености, кислорода
-    4. Прописывает номер станции
+    4. Удаляет дубликаты в каждом дне
+    5. Прописывает номер станции
+    6. Удаляет дубликаты во всем массиве
 
 Затем объединяет все файлы в один файл!
 
@@ -24,44 +26,34 @@ orig_df = pd.read_csv(path_orig, delimiter=',')
 #df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
 #path_cutter = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/1930_01.csv'
 
+
 def cutter_orig_file(df):
+
     """
-    РАЗБИВАЕТ ОРИГИНАЛ ФАЙЛА НА НЕСКОЛЬКО ПО ГОДУ И МЕСЯЦУ
+    Выделяет из всей выборки данные по одному дню и дальше обрабатывает их, затем собирает все дни в один файл
     """
-    # new_df = pd.read_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/new_orig_copy.csv', delimiter=',')
-    # ДОБАВИТЬ ФАЙЛ ДЛЯ СОЕДИНЕНИЯ!!!!!!!!!!!!!!
-    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
 
-    for year in range(1930, 2016):
-        if year in list(df['Year']):
-            for month in range(1, 13):
-                if month in list(df.query('Year == @year')['Month']):
-                    for day in range(1,32):
-                        if day in list(df.query('Year == @year & Month == @month')['Day']):
-                            df_new = df.query('Year == @year & Month == @month & Day == @day')
-                            print('KK')
-                            # !!!!!!!!!!!!!!!!!!!!!!!!NEW
-                            #cleaning_cuttered_files(df_new)
-                            df_new = df_new.drop_duplicates(['long', 'lat', 'level'])
-                            # ВСТАВИТЬ НОМЕРА СТАНЦИЙ
-                            number_station(df_new)
-                            df_last = pd.concat([df_last, df_new])
-                            df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', index=False)
+    df_last = orig_df[:1].copy()  # Пустой Датафрейм с заголовками для присоединения изменённых данных
 
-                            print('Cleaning_cuttered_files - OK')
-                            print(f'{year, month, day}')
+    for year in list(df['Year'].unique()):
+        for month in list(df.query('Year == @year')['Month'].unique()):
+            for day in list(df.query('Year == @year & Month == @month')['Day'].unique()):
+                df_new = df.query('Year == @year & Month == @month & Day == @day')  # Выборка по дню
 
+                # cleaning_cuttered_files(df_new)
 
+                # Если в одном дню станции повторились (даже если разные показатели t/s/o) удаляет второй дубль
+                df_new = df_new.drop_duplicates(['long', 'lat', 'level'])
 
-                    #print(df_new)
-                    #number_station(df)
-                    #print(df)
-                    #df_last = pd.concat([df_last, df])
-                    #print('KK')
-    #df_last.to_csv('C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/joined/1930_6_nst.csv',index=False)
-    #print('joiner_clean_files - OK')
+                # Вызов функции прописывания номеров станциям
+                number_station(df_new)
 
+                # Записывает обработанный день в пустой датафрейм, в котором только заголовки.
+                df_last = pd.concat([df_last, df_new])
 
+                print(f'{year, month, day}')
+    # Записывает полученный датафрейм в csv
+    df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47(3).csv', index=False)
 
 
 def cleaning_cuttered_files(df):
@@ -133,12 +125,12 @@ def cleaning_cuttered_files(df):
     print('Cleaning_cuttered_files - OK')
 
 
-
-
 def number_station(df):
+
     """
-    ДОБАВЛЯЮ НОМЕРА СТАНЦИЙ
+    Добавляет номер станции, с учетом номера станции в предыдущий день (сквозная нумерация)
     """
+
     df_new = df.copy()
     nst = 1
 
@@ -155,29 +147,26 @@ def number_station(df):
         nst += 1  # Увеличиваю порядковый номер станции
 
     df_new['Stations'] = lst  # Добавляю в таблицу столбец с номерами станций
-    #path_df_with_nst = 'C:/Users/Egor/Desktop/all_parameters_okhotskoe/cutter/nst/' + f'{year}_{month}_nst.csv'
-    #df.to_csv(path_df_with_nst, index=False)
-    print('number_station - OK')
     return df_new
 
 
 
 
-#cutter_orig_file(orig_df)
-
-"""
- удаляет дубликаты во всем массиве
-
-"""
 def del_dubl_in_month():
-    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst.csv', delimiter=',')
-    df_last = df_last.drop_duplicates(['long', 'lat', 'level', 'temp','sal', 'oxig'])
-    #print(df_last.describe())
-    df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/1930_6_nst_2.csv', index=False)
-#del_dubl_in_month()
+
+    """
+     Удаляет дубликаты во всем массиве
+    """
+
+    df_last = pd.read_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47(3).csv', delimiter=',')
+    df_last = df_last.drop_duplicates(['long', 'lat', 'level', 'temp', 'sal', 'oxig'])
+    print('OK')
+    df_last.to_csv('C:/Users/Egor/Desktop/oxygen_2.0.1/20_11_20_12_47(4).csv', index=False)
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    # cutter_orig_file(orig_df)
+    # del_dubl_in_month()
     # cutter_orig_file()
     # new_date()
     # cleaning_cuttered_files()
