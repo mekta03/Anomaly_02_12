@@ -6,7 +6,7 @@ import pandas as pd
 
 min_latitude = 42
 max_latitude = 62
-min_longitude = 137.5
+min_longitude = 135
 max_longitude = 165
 
 
@@ -19,9 +19,11 @@ def cutter(a, b, c, d):
     """
     #path_woa_original = 'C:/Users/Egor/Desktop/Anomal_13/woa_originals/woa13_salinity_october_.csv'
     #TEST
-    for i in range(10,13):
-        path_woa_original = 'C:/Users/Egor/Desktop/woa_for_oxygen/temp/original/woa18_A5B7_t'+f'{i}mn04.csv'
-        path_result_original = 'C:/Users/Egor/Desktop/woa_for_oxygen/temp/cutted/woa18_'+f'{i}_cutted.csv'
+    for i in range(1,10):
+        path_woa_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas_temp/woa18_all_o0'+f'{i}mn01.csv'
+        #path_woa_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas_temp/woa18_decav_t06mn01.csv'
+        path_result_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/cutted/woa18_all_o0'+f'{i}mn01_cutted.csv'
+        #path_result_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas_temp/woa18_decav_t06mn01_cutted.csv'
 
         woa_df = pd.read_csv(path_woa_original, header = 1, delimiter=',')
 
@@ -31,8 +33,21 @@ def cutter(a, b, c, d):
         new_woa_df = new_woa_df.query("((LATITUDE >= @a) & (LATITUDE <= @b)) & ((LONGITUDE >= @c) & (LONGITUDE <= @d))")
         #new_woa_1_df = new_woa_df[list_of_columns]
         new_woa_df.to_csv(path_result_original, index=False)
+    
+    for i in range(10,13):
+        path_woa_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/woa18_all_o'+f'{i}mn01.csv'
+        path_result_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/cutted/woa18_all_o'+f'{i}mn01_cutted.csv'
 
-        print('OKEY')
+        woa_df = pd.read_csv(path_woa_original, header = 1, delimiter=',')
+
+        #list_of_columns = ['LATITUDE', 'LONGITUDE', '0', '20', '50', '100', '200', '500']
+        new_woa_df = woa_df.rename(columns = {"#COMMA SEPARATED LATITUDE":'LATITUDE',' LONGITUDE':'LONGITUDE',
+                                          ' AND VALUES AT DEPTHS (M):0':0})
+        new_woa_df = new_woa_df.query("((LATITUDE >= @a) & (LATITUDE <= @b)) & ((LONGITUDE >= @c) & (LONGITUDE <= @d))")
+        #new_woa_1_df = new_woa_df[list_of_columns]
+        new_woa_df.to_csv(path_result_original, index=False)
+    
+    print('OKEY')
 
         # new_coord_station_df = coord_station_df.query("Depth == 0")
 
