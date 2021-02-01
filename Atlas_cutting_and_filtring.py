@@ -28,30 +28,17 @@ def cutter():
         path_woa_original_1 = f'{path_woa_original}woa18_all_o'+f'{o}{i}mn01.csv'
         path_result_original = f'{path_woa_original}woa18_all_o'+f'{o}{i}mn01_cutted.csv'
 
-        print(i)
-        print(path_woa_original_1)
-        print(path_result_original)
-        print()
+        woa_df = pd.read_csv(path_woa_original, header = 1, sep=',')
 
-        # if i < 10:
-        #     path_woa_original = f'{path_woa_original}woa18_all_o0'+f'{i}mn01.csv'
-        #     path_result_original = f'{path_woa_original}woa18_all_o0'+f'{i}mn01_cutted.csv'
+        new_woa_df = woa_df.rename(columns = {"#COMMA SEPARATED LATITUDE":'LATITUDE',' LONGITUDE':'LONGITUDE',
+                                          ' AND VALUES AT DEPTHS (M):0':0})
 
-        # else:
-        #     path_woa_original = f'{path_woa_original}woa18_all_o'+f'{i}mn01.csv'
-        #     path_result_original = f'{path_woa_original}woa18_all_o'+f'{i}mn01_cutted.csv'
-
-        # woa_df = pd.read_csv(path_woa_original, header = 1, sep=',')
-
-        # new_woa_df = woa_df.rename(columns = {"#COMMA SEPARATED LATITUDE":'LATITUDE',' LONGITUDE':'LONGITUDE',
-        #                                   ' AND VALUES AT DEPTHS (M):0':0})
-
-        # new_woa_df = new_woa_df.query("( @min_lat <= LATITUDE  <= @max_lat ) and \
-        #                                 (@min_long <= LONGITUDE <= @max_long )")
+        new_woa_df = new_woa_df.query("( @min_lat <= LATITUDE  <= @max_lat ) and \
+                                        (@min_long <= LONGITUDE <= @max_long )")
                                         
-        # #list_of_columns = ['LATITUDE', 'LONGITUDE', '0', '20', '50', '100', '200', '500']
-        # #new_woa_1_df = new_woa_df[list_of_columns]
-        # new_woa_df.to_csv(path_result_original, index=False)
+        #list_of_columns = ['LATITUDE', 'LONGITUDE', '0', '20', '50', '100', '200', '500']
+        #new_woa_1_df = new_woa_df[list_of_columns]
+        new_woa_df.to_csv(path_result_original, index=False)
   
     print('OKEY')
 
@@ -64,9 +51,7 @@ def filtration(path_woa, path_coord, path_result):
     затем записывает результат в отдельный файл.
 
     """
-    # for path in path_woa_list:
 
-    # path_woa = path
     # Load files of WOA and station`s coordinates
     woa_df = pd.read_csv(path_woa, sep=',')
     coord_df = pd.read_csv(path_coord, sep=',')
