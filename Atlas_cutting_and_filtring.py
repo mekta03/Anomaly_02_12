@@ -17,28 +17,41 @@ def cutter():
     и сохраняет полученный файл атласа
 
     """
-    #path_woa_original = 'C:/Users/Egor/Desktop/Anomal_13/woa_originals/woa13_salinity_october_.csv'
+    path_woa_original = f'{path_dir}woa_originals/'
     #TEST
     for i in range(1,13):
         if i < 10:
-            path_woa_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas_temp/woa18_all_o0'+f'{i}mn01.csv'
-            path_result_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/cutted/woa18_all_o0'+f'{i}mn01_cutted.csv'
-
+            o = '0'
         else:
-            path_woa_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/woa18_all_o'+f'{i}mn01.csv'
-            path_result_original = 'C:/Users/Vladimir.Matveev/Desktop/temp_oxygen/atlas/cutted/woa18_all_o'+f'{i}mn01_cutted.csv'
+            o = ''
 
-        woa_df = pd.read_csv(path_woa_original, header = 1, sep=',')
+        path_woa_original_1 = f'{path_woa_original}woa18_all_o'+f'{o}{i}mn01.csv'
+        path_result_original = f'{path_woa_original}woa18_all_o'+f'{o}{i}mn01_cutted.csv'
 
-        new_woa_df = woa_df.rename(columns = {"#COMMA SEPARATED LATITUDE":'LATITUDE',' LONGITUDE':'LONGITUDE',
-                                          ' AND VALUES AT DEPTHS (M):0':0})
+        print(i)
+        print(path_woa_original_1)
+        print(path_result_original)
+        print()
 
-        new_woa_df = new_woa_df.query("( @min_lat <= LATITUDE  <= @max_lat ) and \
-                                        (@min_long <= LONGITUDE <= @max_long )")
+        # if i < 10:
+        #     path_woa_original = f'{path_woa_original}woa18_all_o0'+f'{i}mn01.csv'
+        #     path_result_original = f'{path_woa_original}woa18_all_o0'+f'{i}mn01_cutted.csv'
+
+        # else:
+        #     path_woa_original = f'{path_woa_original}woa18_all_o'+f'{i}mn01.csv'
+        #     path_result_original = f'{path_woa_original}woa18_all_o'+f'{i}mn01_cutted.csv'
+
+        # woa_df = pd.read_csv(path_woa_original, header = 1, sep=',')
+
+        # new_woa_df = woa_df.rename(columns = {"#COMMA SEPARATED LATITUDE":'LATITUDE',' LONGITUDE':'LONGITUDE',
+        #                                   ' AND VALUES AT DEPTHS (M):0':0})
+
+        # new_woa_df = new_woa_df.query("( @min_lat <= LATITUDE  <= @max_lat ) and \
+        #                                 (@min_long <= LONGITUDE <= @max_long )")
                                         
-        #list_of_columns = ['LATITUDE', 'LONGITUDE', '0', '20', '50', '100', '200', '500']
-        #new_woa_1_df = new_woa_df[list_of_columns]
-        new_woa_df.to_csv(path_result_original, index=False)
+        # #list_of_columns = ['LATITUDE', 'LONGITUDE', '0', '20', '50', '100', '200', '500']
+        # #new_woa_1_df = new_woa_df[list_of_columns]
+        # new_woa_df.to_csv(path_result_original, index=False)
   
     print('OKEY')
 
@@ -61,7 +74,6 @@ def filtration(path_woa, path_coord, path_result):
     # Merge files by only common coordinates and write result to new file
     rslt_df = pd.merge(coord_df, woa_df, on=['Latitude', 'Longitude'], how='inner')
     rslt_df = rslt_df.drop(['Date', 'Time'], axis=1).round(2)
-    # rslt_df = rslt_df
 
     print(rslt_df.head())
     
@@ -84,7 +96,7 @@ def filtration_all():
 
 
 if __name__ == '__main__':
-    filtration_all()
-    # cutter()
+    # filtration_all()
+    cutter()
 
 
