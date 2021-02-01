@@ -1,0 +1,11 @@
+/.idea/
+/old_versions/
+/Наработки/
+/test/
+/venv/
+/.vscode/
+/ANOMALY/
+*.log
+*.csv
+*.txt
+*.xlsx
