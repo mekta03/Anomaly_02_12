@@ -7,7 +7,9 @@ name_stations = 'Станции.csv'
 
 parameter = 'oxig'
 
-lst_levels = [0, 20, 50, 100, 200, 500]
+# lst_levels = [0, 20, 50, 100, 200, 500]
+lst_levels = [0, 20]
+
 
 lst_month = ['september', 'october']
 
@@ -82,7 +84,7 @@ for name_month, num_month in dct_month.items():
             df_for_woa = pd.merge(df_for_woa, dff, on=['long', 'lat'])
         print(name_month, lvl)
     
-    print(df_for_woa)
+    # print(df_for_woa)
     df_for_woa = df_for_woa.copy()
     df_for_woa = df_for_woa.rename(columns={'long':'Longitude', 'lat':'Latitude'})
     df_nst_1 = pd.merge(df_nst_1, df_for_woa, on=['Longitude','Latitude'])
@@ -90,7 +92,13 @@ for name_month, num_month in dct_month.items():
     
 
 print(df_concated)
-df_concated.to_csv(f'{path_dir}filtred_woa_new2.csv', sep=',', index=False)
+# df_stack = df_concated.iloc[:,9:].T
+df_stack = df_concated.iloc[:,9:]
+df_stack = df_stack.stack()
+df_stack = df_stack.reset_index()
+df_stack = df_stack.rename(columns={0:'woa'})
+print(df_stack[['woa']])
+# df_concated.to_csv(f'{path_dir}filtred_woa_new2.csv', sep=',', index=False)
 # # =======================================
 # df_new = pd.DataFrame()
 
