@@ -33,13 +33,10 @@ lst_month = ['september', 'october']
 
 # df_for_woa = df_for_woa.rename(columns={'long':'Longitude', 'lat':'Latitude'})
 
+# ===================================================================
 df_nst = pd.read_csv(f'{path_dir}{name_stations}', sep=',')
-# df_nst = df_nst.copy()
-# df_nst = df_nst.query('Station > 24')
-# df_nst = df_nst.copy()
-df_nst['Date'] = pd.to_datetime(df_nst['Date'],format="%d.%m.%Y")
 
-# df_nst['Date'] = pd.to_datetime(df_nst['Date'])
+df_nst['Date'] = pd.to_datetime(df_nst['Date'],format="%d.%m.%Y")
 df_nst['Time'] = pd.to_datetime(df_nst['Time'])
 
 
@@ -52,12 +49,61 @@ df_nst['Second'] = df_nst['Time'].dt.second
 
 
 df_nst = df_nst.drop(['Date', 'Time'], axis=1)
-print(df_nst)
+# print(df_nst)
 
 
+# ========================================================================
+# Попытка в одну колонку разные месяцы woa записать в зависимости от месяца станции
+df_concated = pd.DataFrame()
+dct_month = {'september':9,'october':10}
+
+for name_month, num_month in dct_month.items():
+    num = True
+    df_for_woa = pd.DataFrame()
+
+    df_nst_1 = df_nst.copy()
+
+    df_nst_1 = df_nst_1.query('Month == @num_month')
+
+    for lvl in lst_levels:
+    
+        file = f'{path_dir}{name_dir_dat}woa_18_{name_month}_{lvl}m.dat'
+        name_of_clolumn = f'WOA_{lvl}m'
+
+        columns = ['long', 'lat', name_of_clolumn]
+        dff = pd.read_csv(file, sep=' ', engine='python', names=columns)
+        dff = dff.copy()
+        dff = dff.loc[dff[name_of_clolumn] < 100].round(3)
+        
+        if num == True:
+            df_for_woa = pd.concat([df_for_woa, dff], axis=1)
+            num = False
+        else:
+            df_for_woa = pd.merge(df_for_woa, dff, on=['long', 'lat'])
+        print(name_month, lvl)
+    
+    print(df_for_woa)
+    df_for_woa = df_for_woa.copy()
+    df_for_woa = df_for_woa.rename(columns={'long':'Longitude', 'lat':'Latitude'})
+    df_nst_1 = pd.merge(df_nst_1, df_for_woa, on=['Longitude','Latitude'])
+    df_concated = pd.concat([df_concated, df_nst_1])
+    
+
+print(df_concated)
+df_concated.to_csv(f'{path_dir}filtred_woa_new2.csv', sep=',', index=False)
+# # =======================================
 # df_new = pd.DataFrame()
-# df_new = pd.merge(df_nst, df_for_woa, on=['Longitude', 'Latitude'])
-# df_new.to_csv(f'{path_dir}filtred_woa.csv', sep=',', index=False)
+
+
+
+# for month in dct_month:
+#     num_month = dct_month[month]
+#     df_nst = df_nst.copy()
+#     df_nst = df_nst.query('Month == @month')
+
+
+#     df_new = pd.merge(df_nst, df_for_woa, on=['Longitude', 'Latitude'])
+# # df_new.to_csv(f'{path_dir}filtred_woa.csv', sep=',', index=False)
 
 
 
