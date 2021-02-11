@@ -1,27 +1,57 @@
 import win32com.client 
 
 
-def surfer_interpolation():
+def surfer_interpolation(file_csv, level):
     """
     ! Surfer должен быть запущен
     Делает интерполяцию в Surfer метод Kriging
     Выходной файл в dat формате
     """
-    app = win32com.client.gencache.EnsureDispatch('Surfer.Application')
-    DataFile = r'C:\Users\malyg\Desktop\kag_64\dat\0.csv'
-    OutFile = r'C:\Users\malyg\Desktop\kag_64\dat\TEST_main_work3'
-    app.GridData(DataFile=DataFile, xCol = 1, yCol = 2, zCol = 3,
-    Algorithm = win32com.client.constants.srfKriging, 
-    NumCols = 61,  
-    NumRows = 41, 
-    xMin = 139, xMax = 169, yMin = 40, yMax = 60, ShowReport=False,
-    OutFmt = win32com.client.constants.srfGridFmtXYZ,
-    OutGrid = OutFile,
-    )
+    x_min, x_max = 134.5, 164.5
+    y_min, y_max = 49.5, 61.5
+    spacing = 0.5
+    # DataFile = r'C:\Users\malyg\Desktop\kag_64\dat\0.csv'
+    DataFile = file_csv
+    
+    col_1 = 8
+    col_2 = 9
+    # col_3 = 12-19
+    
+    # for col_3 in (range(12,20) if level < 1000 else range(12,19)):
+    for col_3 in range(12,20):
+        OutFile = f"C:/Users/malyg/Desktop/kag_64/csv/grd/{level}_{col_3}"
+        app = win32com.client.gencache.EnsureDispatch('Surfer.Application')
 
-surfer_interpolation()
+        app.GridData(DataFile=DataFile,
+                    # Номера колонок
+                    xCol = col_1, yCol = col_2, zCol = col_3,
+                    Algorithm = win32com.client.constants.srfKriging,
+                    # Spacing 
+                    NumCols = ((x_max-x_min)/spacing) + 1,
+                    NumRows = ((y_max-y_min)/spacing) + 1,
+                    xMin = x_min, xMax = x_max, yMin = y_min, yMax = y_max, ShowReport=False,
+                    # OutFmt = win32com.client.constants.srfGridFmtXYZ,
+                    OutFmt = win32com.client.constants.srfGridFmtBinary,
+                    OutGrid = OutFile,
+                    
+        )
 
 
+# Границы уровней
+dct_1 = {i: i + 9 for i in range(0, 31, 10)}
+dct_2 = {i: i + 19 for i in range(30, 31)}
+dct_3 = {i: i + 24 for i in range(50, 99, 25)}
+dct_4 = {i: i + 49 for i in range(100, 251, 50)}
+dct_5 = {i: i + 99 for i in range(300, 600, 100)}
+dct_6 = {i: i + 99 for i in range(600, 1001, 200)}
+# dct_7 = {i: i + 199 for i in range(1000, 1200, 200)}
+dct_std_lvl = {**dct_1, **dct_2, **dct_3, **dct_4, **dct_5, **dct_6 }
+std_lvl = [*dct_std_lvl.keys()]
+
+
+for lvl in std_lvl:
+    file_csv = f'C:/Users/malyg/Desktop/kag_64/csv/{lvl}m.csv'
+    surfer_interpolation(file_csv, lvl)
 
 # def main(): 
 #     app = win32com.client.Dispatch("Surfer.Application") 
