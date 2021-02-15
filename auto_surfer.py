@@ -1,15 +1,20 @@
+"""
+Интерполяция методом Kriging при помощи Surfer
+
+Полный набор действий:
+    Запустить Surfer от имени Админа
+    Интерполирую auto_surfer.py
+
+    Через script Blank_all бланкирую все grd
+    Через script grd_to_dat конвертирую grd в dat
+    Обрабатываю dat через python dat_to_csv.py
+
+"""
+
 import win32com.client 
 import pandas as pd
 
-i = range(18,19)
-print(*i)
-# df=pd.DataFrame(data={
-#                         'latidute':[0,1,2,3,4,5],
-#                         'longitude':[0,1,2,3,4,5],
-#                         'temp':[3,3,3,3,3,3]
-#                     }, index = [i for i in range(6)]
-#                     )
-# print(df.columns.get_loc("temp"))
+
 
 def surfer_interpolation(input_file, output_file, range_coordinates, range_columns):
     """
@@ -78,7 +83,7 @@ dct_6 = {i: i + 99 for i in range(600, 1001, 200)}
 dct_std_lvl = {**dct_1, **dct_2, **dct_3, **dct_4, **dct_5, **dct_6 }
 std_lvl = [*dct_std_lvl.keys()]
 
-
+# TODO сделать список [*std_lvl, 'last_level']
 for lvl in std_lvl:
     input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
     output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
@@ -97,20 +102,19 @@ for lvl in std_lvl:
     surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
+input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/last_level.csv'
+output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/last_level'
+
+# Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
+x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
+col_range = [*range(11, 21)]
+surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
 
+# ============================================================================================
+# ПОПЫТКА ИНТЕРПОЛИРОВАТЬ АТЛАСЫ
 
-
-
-
-
-
-
-
-
-# file_csv =r'D:\Life\Работа\ТИНРО\Текущие проекты\Kaganovsky_2020\kag_64\csv\csv\last_level.csv'
-# surfer_interpolation(file_csv, 'last_level')
 
 
 # name_of_parameters = ['dissolved_oxygen','nitrate', 'phosphat','silicate','salinity','temperature']
