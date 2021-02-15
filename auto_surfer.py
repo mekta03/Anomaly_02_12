@@ -10,6 +10,7 @@
     Обрабатываю dat через python dat_to_csv.py
 
 """
+# TODO сделать exception в случае ошибки если не запустил surfer
 
 import win32com.client 
 import pandas as pd
@@ -83,8 +84,8 @@ dct_6 = {i: i + 99 for i in range(600, 1001, 200)}
 dct_std_lvl = {**dct_1, **dct_2, **dct_3, **dct_4, **dct_5, **dct_6 }
 std_lvl = [*dct_std_lvl.keys()]
 
-# TODO сделать список [*std_lvl, 'last_level']
-for lvl in std_lvl:
+
+for lvl in [*std_lvl, 'last_lvl']:
     input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
     output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
 
@@ -92,7 +93,8 @@ for lvl in std_lvl:
     x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
 
     # Так как NO3 на 1000 метров нет, то её исключаем
-    if lvl < 1000:
+    
+    if lvl == 'last_lvl' or lvl < 1000:
         col_range = [*range(11, 21)]
     else:
         col_range = [*range(11, 18),19,20]
@@ -102,13 +104,13 @@ for lvl in std_lvl:
     surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
-input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/last_level.csv'
-output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/last_level'
+# input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/last_lvl.csv'
+# output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/last_lvl'
 
-# Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
-x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
-col_range = [*range(11, 21)]
-surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
+# # Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
+# x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
+# col_range = [*range(11, 21)]
+# surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
 
