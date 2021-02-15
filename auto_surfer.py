@@ -1,7 +1,8 @@
-# import win32com.client 
+import win32com.client 
 import pandas as pd
 
-
+i = range(18,19)
+print(*i)
 # df=pd.DataFrame(data={
 #                         'latidute':[0,1,2,3,4,5],
 #                         'longitude':[0,1,2,3,4,5],
@@ -10,44 +11,42 @@ import pandas as pd
 #                     )
 # print(df.columns.get_loc("temp"))
 
-def surfer_interpolation(input_file, output_file, first_col, last_col=None):
+def surfer_interpolation(input_file, output_file, range_columns):
     """
     ! WARNING ! Surfer должен быть запущен \n
     input_file - csv, из которого берутся данные для интерполяции; \n
     output_file - название файла без расширения, в который будут записаны результаты интерполяции; \n
 
-    first_col - начало диапазона колонок для интерполяции (результат), \n
-                может быть списком из колонок, которые нужно проинтерполировать; \n
-    last_col - конец диапазона, если не указан, то до конца; \n
+    range_columns - диапазон колонок для интерполяции (результат), \n
+                    может быть списком из колонок, или целым числом; \n
+
 
     Делает интерполяцию в Surfer метод Kriging
     Выходной файл в dat формате
     """
-    # x_min, x_max = 134.5, 164.5
-    # y_min, y_max = 49.5, 61.5
-    # spacing = 0.5
-    x_min, x_max = 120, 180
-    y_min, y_max = 30, 70
-    spacing = 0.01
+    # TODO Выбор координат через список
+    x_min, x_max = 134.5, 164.5
+    y_min, y_max = 49.5, 61.5
+    spacing = 0.5
+    # x_min, x_max = 120, 180
+    # y_min, y_max = 30, 70
+    # spacing = 0.01
     
     DataFile = input_file
     
     df = pd.read_csv(input_file, sep=',')
-    col_1 = df.columns.get_loc("Longitude")
-    col_2 = df.columns.get_loc("Latitude")
+    col_1 = df.columns.get_loc("Longitude")+1
+    col_2 = df.columns.get_loc("Latitude")+1
     print(col_1)
     
-    start_range = first_col
+    start_range = range_columns
     
     # Проверка: интерполирует отдельные колонки, или какой-то диапазон.
     if type(start_range) != list:
-        end_range = last_col
-        range_cols = df.columns[start_range:end_range]
-    else:
-        range_cols = df.columns[start_range]
+        start_range = [start_range]
 
-
-    for col_3 in range_cols:
+    for col_3 in start_range:
+        print('col_3')
         print(col_3)
         
         OutFile = f"{output_file}_{col_3}"
@@ -80,10 +79,30 @@ std_lvl = [*dct_std_lvl.keys()]
 
 
 for lvl in std_lvl:
-    input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}m.csv'
-    output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}m'
-    col_range = [*(range(11, 18),19,20,18)]
+    input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
+    output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
+
+    # Так как NO3 на 1000 метров нет, то её исключаем
+    if lvl < 1000:
+        col_range = [*range(11, 21)]
+    else:
+        col_range = [*range(11, 18),19,20]
+    # col_range = [*range(11, 12)]
+    # col_range = 11
     surfer_interpolation(input_file, output_file, col_range)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # file_csv =r'D:\Life\Работа\ТИНРО\Текущие проекты\Kaganovsky_2020\kag_64\csv\csv\last_level.csv'
 # surfer_interpolation(file_csv, 'last_level')
