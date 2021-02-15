@@ -11,23 +11,24 @@ print(*i)
 #                     )
 # print(df.columns.get_loc("temp"))
 
-def surfer_interpolation(input_file, output_file, range_columns):
+def surfer_interpolation(input_file, output_file, range_coordinates, range_columns):
     """
     ! WARNING ! Surfer должен быть запущен \n
     input_file - csv, из которого берутся данные для интерполяции; \n
     output_file - название файла без расширения, в который будут записаны результаты интерполяции; \n
-
-    range_columns - диапазон колонок для интерполяции (результат), \n
+    range_coordinates - список координат и дискретность [x_min, x_max, y_min, y_max, spacing] [134.5, 164.5, 49.5, 61.5, 0.5]; \n
+    range_columns - диапазон колонок для интерполяции (результат), \n 
                     может быть списком из колонок, или целым числом; \n
 
 
     Делает интерполяцию в Surfer метод Kriging
     Выходной файл в dat формате
     """
-    # TODO Выбор координат через список
-    x_min, x_max = 134.5, 164.5
-    y_min, y_max = 49.5, 61.5
-    spacing = 0.5
+
+    x_min, x_max = range_coordinates[0], range_coordinates[1]
+    y_min, y_max = range_coordinates[2], range_coordinates[3]
+    spacing = range_coordinates[4]
+
     # x_min, x_max = 120, 180
     # y_min, y_max = 30, 70
     # spacing = 0.01
@@ -82,6 +83,9 @@ for lvl in std_lvl:
     input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
     output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
 
+    # Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
+    x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
+
     # Так как NO3 на 1000 метров нет, то её исключаем
     if lvl < 1000:
         col_range = [*range(11, 21)]
@@ -89,7 +93,8 @@ for lvl in std_lvl:
         col_range = [*range(11, 18),19,20]
     # col_range = [*range(11, 12)]
     # col_range = 11
-    surfer_interpolation(input_file, output_file, col_range)
+
+    surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
 
