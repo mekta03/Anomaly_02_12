@@ -77,13 +77,14 @@ df_for_concat_last_lvl = pd.DataFrame()
 for nst in sorted(df['Station'].unique()):
     df_new = df.query('Station == @nst')
 
-    num_cols = [*range(1,10), 11, *range(12,20)]
-    # print(num_cols)
-    
-    df_new = interpolation(df_new, 'level', num_cols)
+    num_cols = [*range(1,10), *range(11,20)]
 
+
+    df_new = interpolation(df_new, 'level', num_cols)
+    if df_new['Data_num'].max() - df_new['Data_num'].min() >= 1:
+        print(df_new['Data_num'].describe())
     # Преобразовывает время в одну колонку datetime
-    df_new['NewTime'] = pd.to_datetime(df_new[['day', 'month', 'year']],format="%d.%m.%Y")
+    df_new['NewTime'] = pd.to_datetime(df_new[['day', 'month', 'year', 'hour', 'minute']],format="%d.%m.%Y.%h.%m")
 
     # Переводит из datetime в UNIX
     df_new['UnixTime'] = (df_new['NewTime'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
@@ -105,6 +106,16 @@ for nst in sorted(df['Station'].unique()):
 
     print(nst)
 
+print(df_for_concat_all_lvl.columns)
+print()
+print(df_for_concat_all_lvl)
+
+new_col_name = ['level', 'Station', 'day', 'month', 'year', 'hour', 'minute', 'Longitude', 'Latitude', 'Depth',
+                'Data_num', 'UnixTime','Temperature', 'Salinity', 'O2', 'O2_%', 'Si', 'PO4', 'NO2', 'NO3', ]
+
+df_for_concat_all_lvl = df_for_concat_all_lvl[new_col_name]
+
+df_for_concat_all_lvl.to_csv(f'{path_project}csv_new/csv/ALL_LVL.csv', index=False)
 for lvl in std_lvl:
     dff  = df_for_concat_all_lvl.query('level == @lvl')
     dff.to_csv(f'{path_project}csv_new/csv/{lvl}.csv', index=False)
