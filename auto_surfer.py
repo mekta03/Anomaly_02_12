@@ -55,13 +55,18 @@ def surfer_interpolation(input_file, output_file, range_coordinates, range_colum
         start_range = [start_range]
 
     for col_3 in start_range:
-        # print('col_3')
-        # print(col_3)
-        
+
         OutFile = f"{output_file}_{col_3}"
         app = win32com.client.Dispatch('Surfer.Application')
-        # app = win32com.client.gencache.EnsureDispatch('Surfer.Application')
-        print(help(app.GridBlank))
+
+        # print(help(app))
+
+        # Если производится бланкирование, то нужен формат grd, иначе можно сразу в dat 
+        if blank: 
+            OutFmt = win32com.client.constants.srfGridFmtBinary, #grd
+        else:
+            OutFmt = win32com.client.constants.srfGridFmtXYZ, # dat
+
         app.GridData(DataFile=DataFile,
                     # Номера колонок
                     xCol = col_1, yCol = col_2, zCol = col_3,
@@ -70,13 +75,13 @@ def surfer_interpolation(input_file, output_file, range_coordinates, range_colum
                     NumCols = ((x_max-x_min)/spacing) + 1,
                     NumRows = ((y_max-y_min)/spacing) + 1,
                     xMin = x_min, xMax = x_max, yMin = y_min, yMax = y_max, ShowReport=False,
-                    # OutFmt = win32com.client.constants.srfGridFmtXYZ, # dat
-                    OutFmt = win32com.client.constants.srfGridFmtBinary, #grd
+                    OutFmt = OutFmt, #grd или dat
                     OutGrid = OutFile,
                     )
         if blank:
-            app.GridBlank(InGrid=OutFile, BlankFile=bln_file, OutGrid=OutFile, OutFmt=3)
-        
+            app.GridBlank(InGrid=OutFile, BlankFile=bln_file, OutGrid=OutFile, OutFmt=3,)
+
+            app.GridConvert(InGrid=OutFile, OutGrid=OutFile, OutFmt=win32com.client.constants.srfGridFmtXYZ)
 
 
 
