@@ -11,7 +11,7 @@ import numpy as np
 name_dir_dat = 'dat_files/'
 name_stations = 'Станции.csv'
 
-lst_of_parameter = ['sal','temp']
+lst_of_parameter = ['Salinity','Temperature']
 
 lst_levels = [0, 20, 50, 100, 200, 500]
 # lst_levels = [0, 20]
@@ -98,11 +98,11 @@ for parameter in lst_of_parameter:
 
         name_columns_woa = ['lat', 'long', *lst_levels]
         woa_df_1 = woa_df_1[name_columns_woa]
-        woa_df_1 = pd.merge(dfff, woa_df_1, on=['lat', 'long'])
+        woa_df_1 = pd.merge(dfff, woa_df_1, on=['Latitude', 'Longitude'])
 
-        for lvl in name_columns_woa[2:]
+        for lvl in name_columns_woa[2:]:
 
-            woa_df_1 = woa_df_1.rename(columns={name:f'WOA_{parameter}_{month}_{lvl}'})
+            woa_df_1 = woa_df_1.rename(columns={lvl:f'WOA_{parameter}_{month}_{lvl}'})
         
         if flag:
             woa_global = pd.concat([woa_global, woa_df_1])
