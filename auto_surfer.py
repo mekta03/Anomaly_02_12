@@ -4,7 +4,9 @@
 Полный набор действий:
     Запустить Surfer от имени Админа
     Интерполирую auto_surfer.py
-
+    Если надо бланкировать прописать путь к bln и выбрать в blank True
+    
+    Можно через scripts
     Через script Blank_all бланкирую все grd
     Через script grd_to_dat конвертирую grd в dat
     Обрабатываю dat через python dat_to_csv.py
