@@ -11,6 +11,7 @@
 
 """
 # TODO сделать exception в случае ошибки если не запустил surfer
+# TODO КОЛОНКА Latitude Longitude предупреждение либо поиск
 
 import win32com.client 
 import pandas as pd
@@ -18,6 +19,7 @@ import pandas as pd
 
 
 def surfer_interpolation(input_file, output_file, range_coordinates, range_columns):
+    
     """
     ! WARNING ! Surfer должен быть запущен \n
     input_file - csv, из которого берутся данные для интерполяции; \n
@@ -35,42 +37,47 @@ def surfer_interpolation(input_file, output_file, range_coordinates, range_colum
     y_min, y_max = range_coordinates[2], range_coordinates[3]
     spacing = range_coordinates[4]
 
+    
     # x_min, x_max = 120, 180
     # y_min, y_max = 30, 70
     # spacing = 0.01
     
     DataFile = input_file
-    
+
     df = pd.read_csv(input_file, sep=',')
     col_1 = df.columns.get_loc("Longitude")+1
     col_2 = df.columns.get_loc("Latitude")+1
-    print(col_1)
-    
+
     start_range = range_columns
-    
+
     # Проверка: интерполирует отдельные колонки, или какой-то диапазон.
     if type(start_range) != list:
         start_range = [start_range]
 
     for col_3 in start_range:
-        print('col_3')
-        print(col_3)
+        # print('col_3')
+        # print(col_3)
         
         OutFile = f"{output_file}_{col_3}"
-        
-        app = win32com.client.gencache.EnsureDispatch('Surfer.Application')
-        # print(help(app.GridData))
+        app = win32com.client.Dispatch('Surfer.Application')
+        # app = win32com.client.gencache.EnsureDispatch('Surfer.Application')
+        print(help(app.GridBlank))
         app.GridData(DataFile=DataFile,
                     # Номера колонок
                     xCol = col_1, yCol = col_2, zCol = col_3,
                     Algorithm = win32com.client.constants.srfKriging,
                     # Spacing 
                     NumCols = ((x_max-x_min)/spacing) + 1,
+                    NumRows = ((y_max-y_min)/spacing) + 1,
                     xMin = x_min, xMax = x_max, yMin = y_min, yMax = y_max, ShowReport=False,
-                    OutFmt = win32com.client.constants.srfGridFmtXYZ, # dat
-                    # OutFmt = win32com.client.constants.srfGridFmtBinary, #grd
+                    # OutFmt = win32com.client.constants.srfGridFmtXYZ, # dat
+                    OutFmt = win32com.client.constants.srfGridFmtBinary, #grd
                     OutGrid = OutFile,
                     )
+        if blank:
+            app.GridBlank(InGrid=OutFile, BlankFile=bln_file, OutGrid=OutFile, OutFmt=3)
+        
+
 
 
 # Границы уровней
@@ -85,62 +92,116 @@ dct_std_lvl = {**dct_1, **dct_2, **dct_3, **dct_4, **dct_5, **dct_6 }
 std_lvl = [*dct_std_lvl.keys()]
 
 
-for lvl in [*std_lvl, 'last_lvl']:
-    input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
-    output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
+# for lvl in [*std_lvl, 'last_lvl']:
+#     input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/{lvl}.csv'
+#     output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/{lvl}'
 
-    # Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
-    x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
+#     # Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
+#     x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
 
-    # Так как NO3 на 1000 метров нет, то её исключаем
+#     # Так как NO3 на 1000 метров нет, то её исключаем
     
-    if lvl == 'last_lvl' or lvl < 1000:
-        col_range = [*range(11, 21)]
-    else:
-        col_range = [*range(11, 18),19,20]
-    # col_range = [*range(11, 12)]
-    # col_range = 11
+#     if lvl == 'last_lvl' or lvl < 1000:
+#         col_range = [*range(11, 21)]
+#     else:
+#         col_range = [*range(11, 18),19,20]
+#     # col_range = [*range(11, 12)]
+#     # col_range = 11
 
-    surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
+#     surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
-
-# input_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/csv/last_lvl.csv'
-# output_file = f'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv/dat/last_lvl'
-
-# # Координаты и дискретность координат x_min, x_max, y_min, y_max, spacing
-# x_y_spacing = [134.5, 164.5, 49.5, 61.5, 0.5]
-# col_range = [*range(11, 21)]
-# surfer_interpolation(input_file, output_file, x_y_spacing, col_range)
 
 
 
 # ============================================================================================
-# ПОПЫТКА ИНТЕРПОЛИРОВАТЬ АТЛАСЫ
+# ИНТЕРПОЛЯЦИЯ АТЛАСОВ WOA
 
+# Файл с координатами станций, для фильтрации полученных словарей
+path_coord_nst = r'D:\Life\Работа\ТИНРО\Нис Сафонов 18.09.20\1_Safonov_20\Аномалии\Salinity\Anomal_Salinity_WOA13\Станции.csv'
+df_coord_nst = pd.read_csv(path_coord_nst, sep=',')
 
+#  Бланкирование #! bln - при digitilize в опции убрать галку NoData inside (тогда данные внутри - иначе снаружи)
+bln_file = r'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/digitized.bln'
+blank = True
 
 # name_of_parameters = ['dissolved_oxygen','nitrate', 'phosphat','silicate','salinity','temperature']
 
 # dct_month = {1: 'January', 2: 'Febraury', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August',
 #             9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
-# path_dir_new = r'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
+name_of_parameters = ['salinity','temperature']
+
+dct_month = {9: 'September', 10: 'October'}
 
 
-# for name in name_of_parameters:
-#     if name not in ['salinity','temperature']:
-#         for lvl in dct_month.keys():
-#             print(lvl)
+path_dir_new = r'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
+
+x_y_spacing =  [146, 154.5, 40.5, 45.5, 0.01]
+
+
+for name in name_of_parameters:
+    print('=====================================================================\n' \
+            f'\t\t{name.upper()}\n'\
+            '=====================================================================')
+
+    if name not in ['salinity','temperature']:
+        lst_month = dct_month.keys()
+    else:
+        lst_month =  dct_month.values()
+    
+    if name not in ['nitrate', 'phosphat','silicate']:
+        name_columns_new = ['Latitude','Longitude', *[str(i) for i in std_lvl]]
+        col_range = [*range(3, len(std_lvl)+3)]
+
+    else:
+        std_lvl_new = [str(i) for i in std_lvl if i <= 800]
+        name_columns_new = ['Latitude','Longitude', *std_lvl_new]
+        col_range = [*range(3, len(std_lvl_new) + 4)]
+    
+    for month in lst_month:
+        df_for_merge = pd.DataFrame()
+        print(month)
+        # =====================================================================================
+        # Обрезка ненужных горизонтов
+        df = pd.read_csv(f'{path_dir_new}{name}/woa18_{name}_{month}.csv', sep=',')
+
+        df_1 = df[name_columns_new]
+        df_1.to_csv(f'{path_dir_new}{name}/woa18_{name}_{month}_cutted.csv', index=False)
+        # =====================================================================================
+
+        input_file = f'{path_dir_new}{name}/woa18_{name}_{month}_cutted.csv'
+        output_file = f'{path_dir_new}{name}/dat/woa18_{name}_{month}'
+        surfer_interpolation(input_file,output_file, x_y_spacing, col_range)
+
+        # ====================================================================================
+        # Конвертирование dat в csv
+        df_concated = pd.DataFrame()
+        flag=True
+        name_of_column = [int(i) for i in name_columns_new[2:]]
+    
+        for col in col_range:
+            columns = ['Longitude', 'Latitude', name_of_column[col-3]]
+
+            df_inter = pd.read_csv(f'{output_file}_{col}.dat', sep=' ', engine='python', names=columns)
             
-#             input_file = rf'{path_dir_new}{name}/woa18_{name}_{lvl}.csv'
-#             output_file = f'{path_dir_new}{name}/woa18_{name}_{lvl}'
-#             surfer_interpolation(input_file,output_file, lvl, name)
-#     else:
-#         for lvl in dct_month.values():
-#             name_of_month = lvl.lower()
-#             file_csv = f'{path_dir_new}{name}/woa18_{name}_{name_of_month}.csv'
-#             surfer_interpolation(file_csv, lvl)
+            df_inter.iloc[:,2] = df_inter.iloc[:,2].round(3)
 
-# # file_csv =r'D:\Life\Работа\ТИНРО\Текущие проекты\Kaganovsky_2020\kag_64\csv\csv\last_level.csv'
-# # surfer_interpolation(file_csv, 'last_level')
+            if flag == True:
+                df_concated = pd.concat([df_concated, df_inter])
+                flag = False
 
+            else:
+               df_concated = pd.concat([df_concated, df_inter.iloc[:,2]], axis=1)
+        
+
+        df_concated.to_csv(f'{path_dir_new}{name}/dat/woa18_{name}_{month}.csv', index=False)
+
+        # =================================================================================
+        # Фильтруем ненужные координаты
+        
+        df_for_merge = pd.merge(df_coord_nst, df_concated, on=['Latitude','Longitude'])
+        df_for_merge.to_csv(f'{path_dir_new}{name}/dat/woa18_{name}_{month}_filtred.csv', index=False)
+        # =================================================================================
+        
+
+# ============================================================================================
