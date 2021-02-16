@@ -1,7 +1,7 @@
 """
-Переводит dat файлы в xlsx
-"""
+Переводит dat файлы в csv / xlsx
 
+"""
 import pandas as pd
 import openpyxl
 import os
@@ -19,7 +19,7 @@ dct_6 = {i: i + 99 for i in range(600, 1001, 200)}
 dct_std_lvl = {**dct_1, **dct_2, **dct_3, **dct_4, **dct_5, **dct_6 }
 std_lvl = [*dct_std_lvl.keys()]
 
-path_project = 'C:/Users/malyg/Desktop/kag_64/csv/dat/'
+path_project = 'D:/Life/Работа/ТИНРО/Текущие проекты/Kaganovsky_2020/kag_64/csv_new/dat/'
 name_xlsx = 'result.xlsx'
 first_run = True
 
@@ -66,34 +66,37 @@ def excel(df, sheet_name, file_name, mode):
 
 
 df_concated_all_lvl = pd.DataFrame()
+df_concated = pd.DataFrame()
+
+
 for lvl in std_lvl:
+    flag=True
     df_concated = pd.DataFrame()
 
-    #
-    flag=True
+    for col_3 in (range(13,21) if lvl < 1000 else range(13,20)):
 
-    # for col_3 in range(12,20):
-    for col_3 in (range(12,20) if lvl < 1000 else range(12,19)):
-        file = f"{path_project}{lvl}_{col_3}_blanked.dat"
-                                   
-        name_of_clolumn = {12:'Temperature', 13:'Salinity', 14:'O2', 15:'O2_%', 16:'Si', 17:'PO4', 18:'NO2', 19:'NO3'}
+        file = f"{path_project}_{lvl}_{col_3}.dat"               
+        name_of_clolumn = {
+                            13:'Temperature', 14:'Salinity', 
+                            15:'O2', 16:'O2_%', 17:'Si', 18:'PO4', 19:'NO2', 20:'NO3'
+                        }
 
-        columns = ['long', 'lat', name_of_clolumn[col_3]]
+        columns = ['Longitude', 'Latitude', name_of_clolumn[col_3]]
         dff = pd.read_csv(file, sep=' ', engine='python', names=columns)
         dff = dff.copy()
         dff[name_of_clolumn[col_3]] = dff[name_of_clolumn[col_3]].round(3)
+
         if flag == True:
-            flag = False
             df_concated = pd.concat([df_concated, dff])
+            flag = False
         else:
-            df_concated = pd.merge(df_concated, dff, on=['long', 'lat'])
-
-    excel(df_concated, lvl, f'{path_project}{name_xlsx}', 'a')
-
+            df_concated = pd.concat([df_concated, dff[name_of_clolumn[col_3]]], axis=1)
+        
+        print(df_concated)
+    
     df_concated['level'] = lvl
     df_concated_all_lvl = pd.concat([df_concated_all_lvl, df_concated])
-    
-    # df_concated.to_csv( f"path_project{lvl}_.csv", index=False)
-df_concated_all_lvl = df_concated_all_lvl[['long','lat','level','Temperature','Salinity','O2','O2_%','Si','PO4','NO2','NO3']]
-df_concated_all_lvl.to_csv( f'{path_project}all_lvl.csv', index=False)
+
+
+    # excel(df_concated, lvl, f'{path_project}{name_xlsx}', 'a')
 
