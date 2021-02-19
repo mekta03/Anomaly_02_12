@@ -148,11 +148,12 @@ for month in lst_month_u:
         mn_atlas_2 = ''.join(a.values())
         
 
-        for parameter in lst_of_parameter:
-            for lvl in df_day['level'].unique():
-                df_lvl = df_day.query('level == @lvl')
-                for nst in df_lvl['Station'].unique():
-                    df_nst = df_lvl.query('Station == @nst')
+        # for parameter in lst_of_parameter:
+        for lvl in df_day['level'].unique():
+            df_lvl = df_day.query('level == @lvl')
+            for nst in df_lvl['Station'].unique():
+                df_nst = df_lvl.query('Station == @nst')
+                for parameter in lst_of_parameter:
                     name_woa_1 = f'WOA_{parameter}_{mn_atlas_1}_{lvl}'
                     name_woa_2 = f'WOA_{parameter}_{mn_atlas_2}_{lvl}'
                     
@@ -165,7 +166,7 @@ for month in lst_month_u:
 
                     # TODO Изменить расположение df_concat_all или метод сложения, т.к. скорее всего при множестве параметров будет ошибка
 
-                    df_concat_all = pd.concat([df_concat_all, df_nst])
+                df_concat_all = pd.concat([df_concat_all, df_nst])
 
 df_concat_all = df_concat_all.sort_values(by=['Station', 'level'])
 # print(df_concat_all)
@@ -196,15 +197,21 @@ def define_anomaly(df, parameter):
 # ====================================================
 
 df_anomaly_all_parameter = pd.DataFrame()
-
+flag = True
 for parameter in lst_of_parameter:
     s_anomaly = define_anomaly(df_concat_all, parameter)
     df_anomaly = pd.DataFrame(data={f'anomaly_of_{parameter}':s_anomaly}).round(2)
 
     # df_concat_all = df_concat_all.drop([f'WOA_{parameter}_1', f'WOA_{parameter}_2'], axis=1)
     
-    df_concat_all = pd.concat([df_concat_all, df_anomaly], axis=1)
-    df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_concat_all])
+    
+    if flag:
+        df_concat_all = pd.concat([df_concat_all, df_anomaly], axis=1)
+        df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_concat_all])
+        flag = False
+    else:
+        df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_anomaly], axis=1)
     print(df_anomaly_all_parameter.query('level == 0'))
     print(df_anomaly_all_parameter.query('level == 0')[[f'WOA_{parameter}_1', f'WOA_{parameter}_2',f'anomaly_of_{parameter}']].head())
 
+df_anomaly_all_parameter.to_csv(f'{path_dir}anomaly_19_02.csv', index=False)
