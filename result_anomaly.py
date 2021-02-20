@@ -67,6 +67,11 @@ lst_of_parameter = [
 # Список уровней, для которых будет расчет аномалий (можно изменить или дописать в таком же формате через запятую)
 lst_levels = [0, 20, 50, 100, 200, 500]
 
+# Вариант названия месяца в названии файла атласа, 
+#   "Пропись" - "woa18_tempreture_september"
+#   "Число"   - "woa18_tempreture_9"
+# Прописать нужный вариант 
+kind_name_of_month = "Число"
 
 
 def name_of_month(month:int) -> str:
@@ -138,9 +143,14 @@ def make_woa_df(df):
     woa_global = pd.DataFrame()
 
     dff = df.copy().query('level == 0')
+
+    if kind_name_of_month == "Пропись":
+        lst_name_of_month = dct_of_month_for_atlas.values()
+    else:
+        lst_name_of_month = dct_of_month_for_atlas.keys()
     
     for parameter in lst_of_parameter:
-        for month in dct_of_month_for_atlas.values():
+        for month in lst_name_of_month:
 
             # TODO Изменить путь - убрать папку dat переложить в корень
 
@@ -194,11 +204,13 @@ def make_df_for_define_anomaly(df, df_woa):
             df_day = df_mn.query('Day == @day')
             a = month_for_atlas_by_day(month, [day])
             
-            # TODO:можно изменить пропись имени месяца на его число
             # достаю значение из словаря
-            mn_atlas_1 = dct_of_month_for_atlas[month]
-            mn_atlas_2 = ''.join(a.values())
-            
+            if kind_name_of_month == "Пропись":
+                mn_atlas_1 = dct_of_month_for_atlas[month]
+                mn_atlas_2 = ''.join(a.values())
+            else:
+                mn_atlas_1 = month
+                mn_atlas_2 = int(*a.keys())
 
             for lvl in df_day['level'].unique():
                 df_lvl = df_day.query('level == @lvl')
@@ -304,7 +316,7 @@ for parameter in lst_of_parameter:
 #     print(df_anomaly_all_parameter.query('level == 0')[[f'WOA_{parameter}_1', f'WOA_{parameter}_2',f'anomaly_of_{parameter}']].head())
 
 
-# print(df_anomaly_all_parameter)
+print(df_anomaly_all_parameter)
 # df_anomaly_all_parameter.to_csv(path_for_result, index=False)
 print("Дело сделано!")
 
