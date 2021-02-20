@@ -1,25 +1,75 @@
-"""
-Производит расчет аномалий
-"""
 import pandas as pd
-import re
-import numpy as np
+
+"""
+=============================================
+Производит расчет аномалий
+=============================================
+
+Для успешной работы программы:
+
+- прописать путь к рабочей папке,в которой будут:
+    - папки с атласами; 
+    - файл с исходными данными;
+    (в эту же папку будет записан результат расчета.)
+
+- указать название файла с исходными данными;
+- указать название файла куда будет записан результат.
 
 
-path_dir = '/home/lenovo/test_anomaly_new/'
+После произвести запуск программы
 
-name_dir_dat = 'dat_files/'
-name_stations = 'Станции.csv'
+# TODO имена файлов атласов и пути к ним возможная проблема месяц прописью а не числом
 
+!!!!!!!! ВАЖНО !!!!!!!!
+Для работы программы необходимо наличие в системе python и библиотеки pandas (установка требуется всего лишь один раз):
+ - выполнить в терминале следующие команды
+
+    установить pip ( pip - менеджер установки пакетов в python, нужен для установки pandas)
+
+    установка библиотеки pandas:
+
+    pip install pandas
+
+    (если ошибка " Command 'pip' not found " попробовать следующую команду)
+    
+    pip3 install pandas
+
+
+1) Название параметра ('salinity', 'temperature', и др.) должны быть одинаковы везде:
+    - в таблице с исходными данными (в названии колонки);
+    - в имени файла атласа (например 'woa18_salinity_september');
+
+2) Путь к рабочей папке должен быть абсолютным (полным) и нужно, чтобы он был обрамлен ковычками ( " или ' );
+
+3) Файлы только в csv формате, в названиях путей к файлам, прописывать расширение .csv;
+4) Расчет программы производится, пока не будет сообщение о завершении работы.
+
+"""
+
+
+# Путь к рабочей папке, в которой будут файл с исходными данными, папки с атласами, и будет записан результат расчета
+path_dir = '/media/lenovo/D/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
+# path_dir = 'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
+
+
+# Путь к файлу с исходными данными
+path_df = f'{path_dir}Safonov_new_lvl.csv'
+
+# Путь к файлу с полученными результатами
+path_for_result = f'{path_dir}anomaly_result.csv'
+
+# Параметры для которых будет произведён расчет аномалий (можно дописать в таком же формате через запятую)
 lst_of_parameter = [
                     'salinity',
-                    'temperature']
+                    'temperature',
+                    ]
 
+# Список уровней, для которых будет расчет аномалий (можно изменить или дописать в таком же формате через запятую)
 lst_levels = [0, 20, 50, 100, 200, 500]
-lst_levels = [str(i) for i in lst_levels]
-# lst_levels = ['0', '20']
 
-def name_of_month(month):
+
+
+def name_of_month(month:int) -> str:
     """
     Возвращает название месяца согласно номеру
     """
@@ -29,16 +79,11 @@ def name_of_month(month):
     return dct_month[month]
 
 
-# path_dfff = '/media/lenovo/D/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/Safonov_for_anomal.csv'
-path_dfff = 'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/Safonov_for_anomal.csv'
-dfff=pd.read_csv(path_dfff, sep=',')
-dfff = dfff.copy()
-dfff[['Longitude', 'Latitude']] = dfff[['Longitude', 'Latitude']].round(2)
-
-
-def define_atlas_for_day(month, day):
+def month_for_atlas_by_day(month:int, day:int)->dict:
     """
-    Определяет нужные атласы, создает словарь '01':'January'
+    Определяет нужные месяца для атласов в зависимости от выбранного дня текущего месяца, создает словарь '01':'January'\n
+    month - месяц 01..12 \n
+    day - день месяца 01..31 \n
     """
 
     dct_month_atlas = {}
@@ -56,127 +101,137 @@ def define_atlas_for_day(month, day):
     return dct_month_atlas
 
 
-new_dct_atlas = {}
-lst_month_u = sorted(dfff['Month'].unique())
+def make_dct_of_all_month_for_atlas(df)->dict:
+    """
+    Определяет все месяца для атласов для переданной таблицы данных \n
+    """
+    dct_of_month_for_atlas = {}
 
-# Определяю необходимые атласы
-for month in lst_month_u:
+    lst_month_u = sorted(df['Month'].unique())
 
-    if month == lst_month_u[0] or month == lst_month_u[-1]:
-        df_1 = dfff.query('Month == @month')['Day']
-        days =  [df_1.min(), df_1.max()]
+    for month in lst_month_u:
 
-        a = define_atlas_for_day(month, days)
+        if month == lst_month_u[0] or month == lst_month_u[-1]:
+            df_1 = df.query('Month == @month')['Day']
+            days =  [df_1.min(), df_1.max()]
 
-        for k, v in a.items():
-            new_dct_atlas[k] = v
+            a = month_for_atlas_by_day(month, days)
 
-        new_dct_atlas[month] = name_of_month(month)
+            for k, v in a.items():
+                dct_of_month_for_atlas[k] = v
 
-    else:
-        name_7 = name_of_month(month)
-        new_dct_atlas[month] = name_7
+            dct_of_month_for_atlas[month] = name_of_month(month)
 
-
-print(new_dct_atlas)
-
-"""
-	беру бд с загруженными атласами 
-		атлас_месяц_лвл и атлас_МЕСЯЦ + - 1 _лвл
-"""
-
-
-#============================================
-# ! ПОДГОТОВКА WOA DF
-# TODO КАК то добавить возможность с параметром
-woa_global = pd.DataFrame()
-flag = True
-# path_dir = r'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
-# path_dir = '/home/lenovo/Документы/test_anomaly/temperature/dat/'
-# path_dir = '/media/lenovo/D/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
-path_dir = 'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
-
-for parameter in lst_of_parameter:
-    for month in new_dct_atlas.values():
-
-        # todo добавить путь к папке с woa и parameter
-
-        name_woa_1 = f'{path_dir}{parameter}/dat/woa18_{parameter}_{month}.csv'
-
-        woa_df_1 = pd.read_csv(name_woa_1, sep=',')
-
-        # todo имена для lat long
-
-        name_columns_woa = ['Latitude', 'Longitude', *lst_levels]
-        woa_df_1 = woa_df_1[name_columns_woa]
-        df_l  = dfff[['Latitude', 'Longitude']]
-        woa_df_1_new = pd.merge( dfff[['Station', 'Latitude', 'Longitude']], woa_df_1,  on=['Latitude', 'Longitude'], how='inner')
-
-        for lvl in name_columns_woa[2:]:
-
-            woa_df_1_new = woa_df_1_new.rename(columns={lvl:f'WOA_{parameter}_{month}_{lvl}'})
-        
-        if flag:
-            woa_global = pd.concat([woa_global, woa_df_1_new])
-            flag=False
         else:
-            woa_global = pd.concat([woa_global, woa_df_1_new.iloc[:,3:]], axis=1)
+            name_7 = name_of_month(month)
+            dct_of_month_for_atlas[month] = name_7
 
-# !ВРОДЕ как до этого момента все правильно делает, нужно в ручную пересчитать аномалии
-# woa_global.to_csv('/media/lenovo/D/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/WOA_ALL.csv', index=False)
 
-# ==========================================
-# new_dct_atlas = {}
-lst_month_u = sorted(dfff['Month'].unique())
+    return dct_of_month_for_atlas
 
-df_concat_all = pd.DataFrame()
-# path_for_anomal = '/media/lenovo/D/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/Safonov_new_lvl.csv'
-path_for_anomal = 'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/Safonov_new_lvl.csv'
-df_for_anomal = pd.read_csv(path_for_anomal, sep=',')
-# df_for_anomal = df_for_anomal.query('Station > 9')
 
-for month in lst_month_u:
+def make_woa_df(df):
+    """
+    Создает таблицу с данными из атласов
+    """
+    # Таблица с данными из нужных атласов
+    woa_global = pd.DataFrame()
 
-    df_mn = df_for_anomal.query('Month == @month')
+    dff = df.copy().query('level == 0')
+    
+    for parameter in lst_of_parameter:
+        for month in dct_of_month_for_atlas.values():
 
-    for day in df_mn['Day'].unique():
-        df_day = df_mn.query('Day == @day')
-        a = define_atlas_for_day(month, [day])
-        
-        # достаю значение из словаря
-        mn_atlas_1 = new_dct_atlas[month]
-        mn_atlas_2 = ''.join(a.values())
-        
+            # TODO Изменить путь - убрать папку dat переложить в корень
 
-        # for parameter in lst_of_parameter:
-        for lvl in df_day['level'].unique():
-            df_lvl = df_day.query('level == @lvl')
-            for nst in df_lvl['Station'].unique():
-                df_nst = df_lvl.query('Station == @nst')
-                for parameter in lst_of_parameter:
-                    name_woa_1 = f'WOA_{parameter}_{mn_atlas_1}_{lvl}'
-                    name_woa_2 = f'WOA_{parameter}_{mn_atlas_2}_{lvl}'
-                    
-                    df_nst = df_nst.copy()
-                    
-                    df_nst[[f'WOA_{parameter}_1']] = [woa_global.query('Station == @nst')[name_woa_1]]
-                    # print(woa_global.query('Station == @nst')[name_woa_1])
-                    # print(df_nst)
-                    df_nst[[f'WOA_{parameter}_2']] = [woa_global.query('Station == @nst')[name_woa_2]]
+            # название файла атласа 
+            name_woa_1 = f'{path_dir}{parameter}/dat/woa18_{parameter}_{month}.csv'
 
-                    # TODO Изменить расположение df_concat_all или метод сложения, т.к. скорее всего при множестве параметров будет ошибка
+            woa_df_1 = pd.read_csv(name_woa_1, sep=',')
 
-                df_concat_all = pd.concat([df_concat_all, df_nst])
+            # TODO имена для lat long
+            # TODO Вывести список колонок в аргументы функции
+            # TODO сделать необязательным колонку Station
+            # TODO если нет Station изменить выбор диапазона колонок
 
-df_concat_all = df_concat_all.sort_values(by=['Station', 'level'])
-# print(df_concat_all)
+            name_columns_woa = ['Latitude', 'Longitude', *lst_levels]
+            woa_df_1 = woa_df_1[name_columns_woa]
+            
+            woa_df_1_new = pd.merge( dff[['Station', 'Latitude', 'Longitude']], woa_df_1,  on=['Latitude', 'Longitude'], how='inner')
 
-# ===================================================
-def define_anomaly(df, parameter):
-    # ! Расчет аномалий
+            for lvl in name_columns_woa[2:]:
 
-    # ! woa_1 = ТЕкущий месяц
-    # ! woa_2 = Следующий или предыдущий месяц
+                woa_df_1_new = woa_df_1_new.rename(columns={lvl:f'WOA_{parameter}_{month}_{lvl}'})
+            
+            if woa_global.empty:
+                woa_global = pd.concat([woa_global, woa_df_1_new])
+
+            else:
+                woa_global = pd.concat([woa_global, woa_df_1_new.iloc[:,3:]], axis=1)
+
+    # woa_global.to_csv(f'{path_dir}WOA_ALL.csv', index=False)
+   
+    return woa_global
+
+
+def make_df_for_define_anomaly(df, df_woa):
+    """
+    Создает таблицу с исходными данными и нужными данными из атласов для дальнейшего расчета аномалий\n
+    df - таблица с исходными данными \n
+    df_woa - таблица с данными из атласов \n
+    """
+    lst_month_u = sorted(df['Month'].unique())
+
+    df_concat_all = pd.DataFrame()
+    
+    df_for_anomal = df.copy()
+
+    for month in lst_month_u:
+
+        df_mn = df_for_anomal.query('Month == @month')
+
+        for day in df_mn['Day'].unique():
+            df_day = df_mn.query('Day == @day')
+            a = month_for_atlas_by_day(month, [day])
+            
+            # TODO:можно изменить пропись имени месяца на его число
+            # достаю значение из словаря
+            mn_atlas_1 = dct_of_month_for_atlas[month]
+            mn_atlas_2 = ''.join(a.values())
+            
+
+            for lvl in df_day['level'].unique():
+                df_lvl = df_day.query('level == @lvl')
+
+                # TODO возможно стоит пробегаться не нст, а делать группировку по координатам и по группам
+                for nst in df_lvl['Station'].unique():
+                    df_nst = df_lvl.query('Station == @nst')
+                    for parameter in lst_of_parameter:
+                        name_woa_1 = f'WOA_{parameter}_{mn_atlas_1}_{lvl}'
+                        name_woa_2 = f'WOA_{parameter}_{mn_atlas_2}_{lvl}'
+                        
+                        df_nst = df_nst.copy()
+                        
+                        df_nst[[f'WOA_{parameter}_1']] = [df_woa.query('Station == @nst')[name_woa_1]]
+                        df_nst[[f'WOA_{parameter}_2']] = [df_woa.query('Station == @nst')[name_woa_2]]
+
+                        
+                    df_concat_all = pd.concat([df_concat_all, df_nst])
+
+    df_concat_all = df_concat_all.sort_values(by=['Station', 'level'])
+
+    return df_concat_all
+    
+
+def define_anomaly(df, parameter:str):
+    """
+    Производит расчет аномалий \n
+    df - таблица, в которой уже присутствуют данные из необходимых атласов \n
+    parameter - выбранный параметр, к примеру ...'Temperature','Salinity'... \n
+    """
+    print(f'Рассчитываю аномалии для {parameter.capitalize()}')
+    # ! WOA_{parameter}_1 = Текущий месяц
+    # ! WOA_{parameter}_2 = Следующий или предыдущий месяц, в зависимости от даты текущей станции
     df = df.copy()
     
     # На сколько изменяется значение в сутки
@@ -187,31 +242,69 @@ def define_anomaly(df, parameter):
 
     # Разница между фактическим значеним и расчитанным средним значением
     anomaly = (df[parameter] - mean_for_date).dropna()
-    # anomaly_2 = (df_query_2['Salinity'] - mean_for_date_2).dropna()
 
-    # finished_df = pd.concat([anomaly_1, anomaly_2],ignore_index=True)
-    return anomaly
+    df_anomaly = pd.DataFrame(data={f'anomaly_of_{parameter}': anomaly})
 
-    # df[f'Anomaly_{parameter}'] = anomaly_1
+    return df_anomaly
 
-# ====================================================
 
+
+# Таблица с исходными данными
+df = pd.read_csv(path_df, sep=',')
+
+# Округляю координаты
+df = df.copy()
+df[['Longitude', 'Latitude']] = df[['Longitude', 'Latitude']].round(2)
+
+# Фильтрует исходные данные по заданным горизонтам
+df = df.query('level in @lst_levels')
+
+
+# Перевод в строки уровни в цифрах
+lst_levels = [str(i) for i in lst_levels]
+
+# Словарь со всеми месяцами для выбора атласов
+dct_of_month_for_atlas = make_dct_of_all_month_for_atlas(df)
+
+# Таблица с данными из атласов
+df_woa = make_woa_df(df)
+
+# Таблица с исходными данными и данными из атласов для дальнейшего расчета аномалий
+df_for_define_anomaly = make_df_for_define_anomaly(df, df_woa)
+
+# Таблица с результатом
 df_anomaly_all_parameter = pd.DataFrame()
-flag = True
+
+
+
+# первая итерация для создания таблицы : исходные данные + данные атласов + аномалия для одного из параметров
+# последующие итерации добавляют только расчитанные аномалии
+print('=============================================================\n')
+
 for parameter in lst_of_parameter:
-    s_anomaly = define_anomaly(df_concat_all, parameter)
-    df_anomaly = pd.DataFrame(data={f'anomaly_of_{parameter}':s_anomaly}).round(2)
+    
+    # Таблица с расчитанными аномалиями
+    df_anomaly = define_anomaly(df_for_define_anomaly, parameter).round(2)
 
-    # df_concat_all = df_concat_all.drop([f'WOA_{parameter}_1', f'WOA_{parameter}_2'], axis=1)
+    # Удаляет столбцы с данными из атласов, которые нужны были для расчета аномалий (ПОКА не удаляет, надо убрать #)
+    #df_for_define_anomaly = df_for_define_anomaly.drop([f'WOA_{parameter}_1', f'WOA_{parameter}_2'], axis=1)
     
-    
-    if flag:
-        df_concat_all = pd.concat([df_concat_all, df_anomaly], axis=1)
-        df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_concat_all])
-        flag = False
+    # Первая итерация (если в таблица пустая)
+    if df_anomaly_all_parameter.empty:
+        # Добавляю в пустую таблицу исходные данные + данные атласов + аномалия для одного из параметров
+        df_for_define_anomaly = pd.concat([df_for_define_anomaly, df_anomaly], axis=1)
+        df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_for_define_anomaly])
+
+
+    # Последующие итерации
     else:
+        # В таблицу с (исходные данные, данные атласов, аномалия для одного из параметров) добавляю + аномалия для следующего из параметров
         df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_anomaly], axis=1)
-    print(df_anomaly_all_parameter.query('level == 0'))
-    print(df_anomaly_all_parameter.query('level == 0')[[f'WOA_{parameter}_1', f'WOA_{parameter}_2',f'anomaly_of_{parameter}']].head())
+#     print(df_anomaly_all_parameter.query('level == 0'))
+#     print(df_anomaly_all_parameter.query('level == 0')[[f'WOA_{parameter}_1', f'WOA_{parameter}_2',f'anomaly_of_{parameter}']].head())
 
-df_anomaly_all_parameter.to_csv(f'{path_dir}anomaly_19_02.csv', index=False)
+
+# print(df_anomaly_all_parameter)
+# df_anomaly_all_parameter.to_csv(path_for_result, index=False)
+print("Дело сделано!")
+
