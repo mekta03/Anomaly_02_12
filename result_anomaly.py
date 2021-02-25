@@ -79,7 +79,8 @@ path_dir = '/media/lenovo/D/Life/Работа/ТИНРО/Программы/Ат
 # path_dir = 'D:/Life/Работа/ТИНРО/Программы/Атласы (World Ocean Atlas)/test_anomaly/'
 
 # Название файла csv с исходными данными (вписать название своего файла в ковычки)
-name_df = 'Safonov_new_lvl.csv'
+# name_df = 'Safonov_new_lvl.csv'
+name_df = 'new_safonov_20_test.csv'
 
 # Название файла csv, который будет создан с результатами расчета (отдельно создавать его не нужно)
 # (вписать название своего файла в ковычки)
@@ -88,7 +89,7 @@ name_result = 'anomaly_result.csv'
 # Параметры для которых будет произведён расчет аномалий (можно дописать в таком же формате через запятую)
 # к примеру 'nitrate', 'dissolved_oxygen', 'silicate', 'phosphat'
 lst_of_parameter = [
-                    'salinity',
+                    # 'salinity',
                     'temperature',
                     ]
 
@@ -209,7 +210,7 @@ def make_woa_df(df):
             else:
                 woa_global = pd.concat([woa_global, woa_df_1_new.iloc[:,3:]], axis=1)
 
-    # woa_global.to_csv(f'{path_dir}WOA_ALL.csv', index=False)
+    # woa_global.to_csv(f'{path_dir}WOA_ALL_safonov_20_test.csv', index=False)
    
     return woa_global
 
@@ -227,7 +228,6 @@ def make_df_for_define_anomaly(df, df_woa):
     df_for_anomal = df.copy()
 
     for month in lst_month_u:
-
         df_mn = df_for_anomal.query('Month == @month')
 
         for day in df_mn['Day'].unique():
@@ -253,7 +253,6 @@ def make_df_for_define_anomaly(df, df_woa):
                         name_woa_2 = f'WOA_{parameter}_{mn_atlas_2}_{lvl}'
                         
                         df_nst = df_nst.copy()
-                        
                         df_nst[[f'WOA_{parameter}_1']] = [df_woa.query('Station == @nst')[name_woa_1]]
                         df_nst[[f'WOA_{parameter}_2']] = [df_woa.query('Station == @nst')[name_woa_2]]
 
@@ -279,15 +278,23 @@ def define_anomaly(df, parameter:str):
     # На сколько изменяется значение в сутки
     grad = (df[f'WOA_{parameter}_2'] - df[f'WOA_{parameter}_1'])/30
 
-    # Среднее значение для даты станции
-    mean_for_date = df[f'WOA_{parameter}_1'] + ((df['Day'] - 15) * grad)
+    # Делю на две части до 15 числа и после
+    df_concat_all_day = pd.DataFrame()
+    lst_query = ['Day < 15','Day >= 15',]
 
-    # Разница между фактическим значеним и расчитанным средним значением
-    anomaly = (df[parameter] - mean_for_date).dropna()
 
-    df_anomaly = pd.DataFrame(data={f'anomaly_of_{parameter}': anomaly})
+    for query in lst_query:
+        df_days = df.query(query)
+        if query == 'Day < 15':
+            mean_for_date = df_days[f'WOA_{parameter}_1'] + ((15- df_days['Day'])* grad)
+        else:
+            mean_for_date = df_days[f'WOA_{parameter}_1'] + ((df_days['Day'] - 15)* grad)
 
-    return df_anomaly
+        anomaly = (df_days[parameter] - mean_for_date).dropna()
+        df_anomaly = pd.DataFrame(data={f'anomaly_of_{parameter}': anomaly})
+        df_concat_all_day = pd.concat([df_concat_all_day, df_anomaly])
+
+    return df_concat_all_day
 
 
 # Путь к файлу с исходными данными
@@ -324,9 +331,6 @@ df_for_define_anomaly = make_df_for_define_anomaly(df, df_woa)
 df_anomaly_all_parameter = pd.DataFrame()
 
 
-
-# первая итерация для создания таблицы : исходные данные + данные атласов + аномалия для одного из параметров
-# последующие итерации добавляют только расчитанные аномалии
 print('=============================================================\n')
 
 for parameter in lst_of_parameter:
@@ -335,14 +339,13 @@ for parameter in lst_of_parameter:
     df_anomaly = define_anomaly(df_for_define_anomaly, parameter).round(2)
 
     # Удаляет столбцы с данными из атласов, которые нужны были для расчета аномалий (ПОКА не удаляет, надо убрать #)
-    #df_for_define_anomaly = df_for_define_anomaly.drop([f'WOA_{parameter}_1', f'WOA_{parameter}_2'], axis=1)
+    # df_for_define_anomaly = df_for_define_anomaly.drop([f'WOA_{parameter}_1', f'WOA_{parameter}_2'], axis=1)
     
     # Первая итерация (если в таблица пустая)
     if df_anomaly_all_parameter.empty:
         # Добавляю в пустую таблицу исходные данные + данные атласов + аномалия для одного из параметров
         df_for_define_anomaly = pd.concat([df_for_define_anomaly, df_anomaly], axis=1)
         df_anomaly_all_parameter= pd.concat([df_anomaly_all_parameter, df_for_define_anomaly])
-
 
     # Последующие итерации
     else:
@@ -354,5 +357,8 @@ for parameter in lst_of_parameter:
 
 print(df_anomaly_all_parameter)
 # df_anomaly_all_parameter.to_csv(path_for_result, index=False)
+
+path_for_result_new = f'{path_dir}new_result_anomal.csv'
+# df_anomaly_all_parameter.to_csv(path_for_result_new, index=False)
 print("Дело сделано!")
 
