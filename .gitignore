@@ -1,5 +1,6 @@
-/.idea/
-/old_versions/
+.idea/
+.idea
+old_version/
 /Наработки/
 /test/
 /venv/
